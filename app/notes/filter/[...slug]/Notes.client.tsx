@@ -1,67 +1,37 @@
 'use client';
-
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useDebouncedCallback } from 'use-debounce';
 import { fetchNotes } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
-import Modal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
 import type { NoteTag } from '@/types/note';
+import css from './Notes.module.css';
 
-interface NotesClientProps {
-  tag?: string;
-}
-
-export default function NotesClient({ tag }: NotesClientProps) {
+export default function NotesClient({ tag }: { tag?: string }) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const filterTag = tag === 'all' || !tag ? undefined : (tag as NoteTag);
 
-  const handleSearch = useDebouncedCallback((value: string) => {
-    setDebouncedSearch(value);
-    setPage(1);
-  }, 300);
+  const handleSearch = useDebouncedCallback((v) => { setDebouncedSearch(v); setPage(1); }, 300);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['notes', filterTag, page, debouncedSearch],
     queryFn: () => fetchNotes({ tag: filterTag, page, search: debouncedSearch }),
   });
 
   return (
-    <div>
-      <SearchBox
-        value={search}
-        onChange={(value) => {
-          setSearch(value);
-          handleSearch(value);
-        }}
-      />
-      <button onClick={() => setIsModalOpen(true)}>Add note</button>
-
-      {isLoading && <p>Loading...</p>}
-      {error && <p>Something went wrong.</p>}
-      {data && <NoteList notes={data.notes} />}
+    <div className={css.app}>
+      <div className={css.toolbar}>
+        <SearchBox value={search} onChange={(v) => { setSearch(v); handleSearch(v); }} />
+        <Link href="/notes/action/create" className={css.button}>Create note +</Link>
+      </div>
+      {isLoading ? <p>Loading...</p> : data && <NoteList notes={data.notes} />}
       {data && data.totalPages > 1 && (
-        <Pagination
-          totalPages={data.totalPages}
-          currentPage={page}
-          onPageChange={setPage}
-        />
-      )}
-
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm
-            onCancel={() => setIsModalOpen(false)}
-            onSuccess={() => setIsModalOpen(false)}
-          />
-        </Modal>
+        <Pagination totalPages={data.totalPages} currentPage={page} onPageChange={setPage} />
       )}
     </div>
   );
