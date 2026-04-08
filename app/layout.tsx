@@ -15,7 +15,13 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: 'NoteHub',
-  description: 'NoteHub is a simple and efficient application for managing personal notes.',
+  description: 'NoteHub is a simple and efficient application for managing personal notes. Keep your thoughts organized and accessible in one place.',
+  openGraph: {
+    title: 'NoteHub',
+    description: 'NoteHub is a simple and efficient application for managing personal notes. Keep your thoughts organized and accessible in one place.',
+    url: 'https://notehub.app',
+    images: ['https://ac.goit.global/fullstack/react/notehub-og-meta.jpg'],
+  },
 };
 
 export default function RootLayout({ children, modal }: { children: ReactNode; modal: ReactNode }) {
